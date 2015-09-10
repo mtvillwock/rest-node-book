@@ -7,8 +7,14 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var sessions = require('./routes/sessions');
 var books = require('./routes/books');
+var lists = require('./routes/lists');
 
+var db = require('./config/database').database;
+console.log("---------------------")
+console.log(db.Book);
+console.log("---------------------")
 var app = express();
 
 // view engine setup
@@ -23,8 +29,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Specify routes for routes
 app.use('/', routes);
 app.use('/users', users);
+app.use('/sessions', sessions);
+app.use('/books', books);
+app.use('/lists', lists);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
