@@ -2,12 +2,6 @@
 var models = require('../models');
 console.log("INDEX JS ROUTES FILE")
 console.log(models.Book);
-// models.Book.findAll().then(function(lists){
-//     console.log(book)
-//       res.send({
-//         books: books
-//       });
-// })
 console.log("INDEX JS ROUTES FILE")
 var express = require('express');
 var router = express.Router();
@@ -83,7 +77,7 @@ router.route('/users/:user_id')
 // Books
 /////////////////
 router.get('/books', function(req, res, next) {
-    db.Book.findAll()
+    models.Book.findAll()
         .then(function findBooksSuccess(books) {
             res.send({
                 books: books
