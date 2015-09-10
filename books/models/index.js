@@ -34,10 +34,11 @@ Object.keys(db).forEach(function(modelName) {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-db['User'].hasMany(db['List'], {foreignKey: 'user_id'});
-db['List'].belongsTo(db['User'], {foreignKey: 'user_id'});
-db['List'].hasMany(db['Book'], { foreignKey: 'list_id'});
-db['Book'].belongsTo(db['List'], {foreignKey: 'list_id'});
+// Will make foreign keys underscored later
+db['User'].hasMany(db['List'], {foreignKey: 'UserId'});
+db['List'].belongsTo(db['User'], {foreignKey: 'UserId'});
+db['List'].hasMany(db['Book'], { foreignKey: 'ListId'});
+db['Book'].belongsTo(db['List'], {foreignKey: 'ListId'});
 
 
 console.log("DB['model'] IN /models/INDEX JS---");

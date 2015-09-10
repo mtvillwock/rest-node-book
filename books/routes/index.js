@@ -124,10 +124,11 @@ router.get('/lists', function(req, res, next) {
 router.post('/lists', function(req, res, next) {
     console.log("request is:", req.body);
     var body = req.body;
+    console.log(req.params);
     models.List.create({
-        email: body["name"],
-        password: body["type"],
-        user_id: body["user_id"]
+        name: body["name"],
+        type: body["type"],
+        UserId: 1 //body["user_id"]
     })
         .then(function createlistSuccess(list) {
             console.log(list.get('name'));
@@ -139,19 +140,33 @@ router.post('/lists', function(req, res, next) {
     res.redirect('/lists');
 });
 
+// Get a single list
+
 /////////////////
 // Books
 /////////////////
-router.get('/books', function(req, res, next) {
-    models.Book.findAll()
+router.get('lists/:id/books', function(req, res, next) {
+    var list = models.List.findOne()
+        .then(function() {
+            console.log("found the list", list);
+        }).error(function() {
+            console.log("couldn't find the list");
+        })
+
+    var books = models.Book.findAll({
+            where: {
+                list_id: req.params.id
+            }
+        })
         .then(function(books) {
             res.render('books/index', {
-                title: "Books Index",
+                list: list,
+                title: "Books for " + list.name,
                 books: books
             });
         })
         .error(function(err) {
-            console.log(err);
+            console.log("couldn't find books for that list:", err);
         })
 });
 
