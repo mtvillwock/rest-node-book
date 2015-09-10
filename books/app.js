@@ -4,6 +4,18 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var flash = require('connect-flash');
+var session = require('express-session');
+
+var configDB = require('./config/database')
+
+// app.use(session({
+//     secret: 'secret'
+// })); // session secret
+// app.use(passport.initialize());
+// app.use(passport.session()); // persistent login sessions
+// app.use(flash()); // use connect-flash for flash messages stored in session
+
 
 console.log("IN APP JS");
 // Requiring DB from database.js
@@ -30,6 +42,8 @@ db.sequelize.sync({
 console.log("POST DB SYNC APP JS");
 
 // Routes
+// require('./app/routes.js') (app, passport); // load our routes and pass in our app and fully configured passport
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var sessions = require('./routes/sessions');
