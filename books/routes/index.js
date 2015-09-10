@@ -1,11 +1,14 @@
+// requiring all the models from models directory
 var models = require('../models');
-console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-console.log(models.List)
-models.List.all().then(function(b){
-    console.log(b)
-
-})
-console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+console.log("INDEX JS ROUTES FILE")
+console.log(models.Book);
+// models.Book.findAll().then(function(lists){
+//     console.log(book)
+//       res.send({
+//         books: books
+//       });
+// })
+console.log("INDEX JS ROUTES FILE")
 var express = require('express');
 var router = express.Router();
 
@@ -63,13 +66,13 @@ router.route('/users/:user_id')
         // get a user
     })
 
-    .put(function(req, res) {
-        // update a user
-    })
+.put(function(req, res) {
+    // update a user
+})
 
-    .delete(function(req, res) {
-        // destroy a user
-    })
+.delete(function(req, res) {
+    // destroy a user
+})
 
 /////////////////
 // Lists
@@ -80,9 +83,16 @@ router.route('/users/:user_id')
 // Books
 /////////////////
 router.get('/books', function(req, res, next) {
-    db.Book.findAll().then(function(books) {
-        res.json(books);
-    })
+    db.Book.findAll()
+        .then(function findBooksSuccess(books) {
+            res.send({
+                books: books
+            });
+        }, function findBooksError(error) {
+            res.send({
+                error: error
+            });
+        });
 });
 
 

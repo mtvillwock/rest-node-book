@@ -34,4 +34,15 @@ Object.keys(db).forEach(function(modelName) {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+db['User'].hasMany(db['List'], {foreignKey: 'user_id'});
+db['List'].belongsTo(db['User'], {foreignKey: 'user_id'});
+db['List'].hasMany(db['Book'], { foreignKey: 'list_id'});
+db['Book'].belongsTo(db['List'], {foreignKey: 'list_id'});
+
+
+console.log("DB['model'] IN /models/INDEX JS---");
+console.log(db['User']);
+console.log(db['List']);
+console.log(db['Book']);
+console.log("DB IN /models/INDEX JS ----");
 module.exports = db;
