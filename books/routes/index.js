@@ -27,7 +27,21 @@ router.get('/sessions/new', function(req, res, next) {
 
 // Post Session &&& create session to login user
 router.post('/sessions', function(req, res, next) {
-    console.log(req.body);
+    var body = req.body;
+    var params = req.params;
+    var user = models.User.findOne({
+            where: {
+                // email: req.params.email
+                email: body["email"]
+            }
+        })
+        .then(function(user) {
+            console.log(user);
+            res.send(user);
+        })
+        .error(function(err) {
+            console.log(err);
+        })
 });
 
 // Get form for new user
@@ -41,13 +55,17 @@ router.get('/users/new', function(req, res, next) {
 router.post('/users', function(req, res, next) {
     console.log("request is:", req.body);
     var body = req.body;
-    User.create({ email: body["email"], password: body["password"] })
-  .then(function(user) {
-    console.log(user.get('email')); // John Doe (SENIOR ENGINEER)
-    console.log(user.get('password')); // SENIOR ENGINEER
-  })
-    res.send('POST request to the make new user');
-
+    models.User.create({
+        email: body["email"],
+        password: body["password"]
+    })
+        .then(function createUserSuccess(user) {
+            console.log(user.get('email'));
+            console.log(user.get('password'));
+        }, function createUserError(err) {
+            console.log("error is:", err);
+        })
+    res.redirect('/users');
 });
 
 // Delete Session - Logout user
@@ -59,7 +77,13 @@ router.delete('/sessions/:id', function(req, res, next) {
 // Users
 /////////////////
 router.get('/users', function(req, res, next) {
-    res.send('respond with all users');
+  models.User.findAll()
+  .then(function(users) {
+    res.render('users/index', { title: "Users Index", users: users });
+  })
+  .error(function(err) {
+    console.log(err);
+  })
 });
 
 router.route('/users/:user_id')

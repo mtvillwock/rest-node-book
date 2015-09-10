@@ -3,7 +3,8 @@ var router = express.Router();
 
 /* GET users listing. */
 router.get('/users', function(req, res, next) {
-  res.send('respond with all users');
+
+  res.render('/users/index', { users: users });
 });
 
 router.get('/users/new', function(req, res, next) {

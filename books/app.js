@@ -21,7 +21,7 @@ console.log("IN APP JS");
 // Requiring DB from database.js
 var db = require('./models/index');
 // DB has all models
-console.log(db.sequelize.models);
+// console.log(db.sequelize.models);
 
 // Verifying the DB connection has been made
 db.sequelize.authenticate()
@@ -68,10 +68,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Specify routes for routes
 app.use('/', routes);
-app.use('/users', users);
-app.use('/sessions', sessions);
-app.use('/books', books);
-app.use('/lists', lists);
+// app.use('/users', users);
+// app.use('/sessions', sessions);
+// app.use('/books', books);
+// app.use('/lists', lists);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
