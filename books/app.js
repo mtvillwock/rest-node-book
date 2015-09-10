@@ -5,25 +5,27 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+console.log("IN APP JS");
 // Requiring DB from database.js
-var dbCon = require('./config/database').database;
-console.log("IN APP JS FILE ")
-console.log(dbCon);
+var db = require('./models/index');
+// DB has all models
+console.log(db.sequelize.models);
+
 // Verifying the DB connection has been made
-dbCon.authenticate()
+db.sequelize.authenticate()
 .then(function(err) {
     console.log('Connection has been established successfully.');
   }, function (err) {
     console.log('Unable to connect to the database:', err);
   });
 // Force migrations, dropping && creating tables
-dbCon.sync({ force: true })
+db.sequelize.sync({ force: true })
   .then(function(err) {
     console.log('It worked!');
   }, function (err) {
     console.log('An error occurred while creating the table:', err);
   });
-console.log("APP JS FILE ")
+console.log("POST DB SYNC APP JS");
 
 // Routes
 var routes = require('./routes/index');
