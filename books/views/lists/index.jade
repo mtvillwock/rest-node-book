@@ -1,0 +1,18 @@
+extends ../layout
+
+block content
+  h1= title
+
+  h2 Creating a new list
+  form(action="/lists", method="post")
+    input(type="hidden", value="user id", name="user_id")
+    input(type="text", placeholder="name", name="name")
+    input(type="text", placeholder="type", name="type")
+    input(type="submit")
+
+  h2 lists
+
+  ul
+  each list in lists
+    li
+      = list.name

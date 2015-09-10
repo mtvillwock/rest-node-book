@@ -77,13 +77,16 @@ router.delete('/sessions/:id', function(req, res, next) {
 // Users
 /////////////////
 router.get('/users', function(req, res, next) {
-  models.User.findAll()
-  .then(function(users) {
-    res.render('users/index', { title: "Users Index", users: users });
-  })
-  .error(function(err) {
-    console.log(err);
-  })
+    models.User.findAll()
+        .then(function(users) {
+            res.render('users/index', {
+                title: "Users Index",
+                users: users
+            });
+        })
+        .error(function(err) {
+            console.log(err);
+        })
 });
 
 router.route('/users/:user_id')
@@ -103,23 +106,73 @@ router.route('/users/:user_id')
 // Lists
 /////////////////
 
+// Get all the lists
+router.get('/lists', function(req, res, next) {
+    models.Book.findAll()
+        .then(function(lists) {
+            res.render('lists/index', {
+                title: "Lists Index",
+                lists: lists
+            });
+        })
+        .error(function(err) {
+            console.log(err);
+        })
+});
+
+// Make a new list
+router.post('/lists', function(req, res, next) {
+    console.log("request is:", req.body);
+    var body = req.body;
+    models.List.create({
+        email: body["name"],
+        password: body["type"],
+        user_id: body["user_id"]
+    })
+        .then(function createlistSuccess(list) {
+            console.log(list.get('name'));
+            console.log(list.get('type'));
+            console.log(list.get('user_id'));
+        }, function createlistError(err) {
+            console.log("error is:", err);
+        })
+    res.redirect('/lists');
+});
 
 /////////////////
 // Books
 /////////////////
 router.get('/books', function(req, res, next) {
     models.Book.findAll()
-        .then(function findBooksSuccess(books) {
-            res.send({
+        .then(function(books) {
+            res.render('books/index', {
+                title: "Books Index",
                 books: books
             });
-        }, function findBooksError(error) {
-            res.send({
-                error: error
-            });
-        });
+        })
+        .error(function(err) {
+            console.log(err);
+        })
 });
 
+// Make a new Book
+router.post('/books', function(req, res, next) {
+    console.log("request is:", req.body);
+    var body = req.body;
+    models.Book.create({
+        email: body["name"],
+        password: body["type"],
+        user_id: body["user_id"]
+    })
+        .then(function createBookSuccess(book) {
+            console.log(book.get('name'));
+            console.log(book.get('type'));
+            console.log(book.get('user_id'));
+        }, function createBookError(err) {
+            console.log("error is:", err);
+        })
+    res.redirect('/books');
+});
 
 
 module.exports = router;
