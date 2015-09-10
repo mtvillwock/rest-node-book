@@ -1,5 +1,6 @@
 // requiring all the models from models directory
 var models = require('../models');
+var validator = require('validator');
 console.log("INDEX JS ROUTES FILE")
 console.log(models.Book);
 console.log("INDEX JS ROUTES FILE")
@@ -38,9 +39,15 @@ router.get('/users/new', function(req, res, next) {
 
 // Post Users - create user in DB
 router.post('/users', function(req, res, next) {
-    res.send('POST request to the homepage');
-    console.log(req.body);
-    // User.create()
+    console.log("request is:", req.body);
+    var body = req.body;
+    User.create({ email: body["email"], password: body["password"] })
+  .then(function(user) {
+    console.log(user.get('email')); // John Doe (SENIOR ENGINEER)
+    console.log(user.get('password')); // SENIOR ENGINEER
+  })
+    res.send('POST request to the make new user');
+
 });
 
 // Delete Session - Logout user
