@@ -4,18 +4,12 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+
+var passport = require('passport');
 var flash = require('connect-flash');
 var session = require('express-session');
 
 var configDB = require('./config/database')
-
-// app.use(session({
-//     secret: 'secret'
-// })); // session secret
-// app.use(passport.initialize());
-// app.use(passport.session()); // persistent login sessions
-// app.use(flash()); // use connect-flash for flash messages stored in session
-
 
 console.log("IN APP JS");
 // Requiring DB from database.js
@@ -52,19 +46,29 @@ var lists = require('./routes/lists');
 
 var app = express();
 
-// view engine setup
+// view engine setup - set path and choose Jade
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
+
+app.use(logger('dev')); // log requests to console
+app.use(bodyParser.json()); //
 app.use(bodyParser.urlencoded({
-    extended: false
-}));
-app.use(cookieParser());
+    extended: true
+})); // get info from HTML forms
+app.use(cookieParser()); // read cookies (for auth)
 app.use(express.static(path.join(__dirname, 'public')));
+
+// required for passport
+app.use(session({
+    secret: 'mysecret'
+})); // session secret
+app.use(passport.initialize());
+app.use(passport.session()); // persistent login sessions
+app.use(flash()); // use connect-flash for flash messages stored in session
+
 
 // Specify routes for routes
 app.use('/', routes);

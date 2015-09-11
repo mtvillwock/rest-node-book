@@ -1,8 +1,9 @@
 // requiring all the models from models directory
 var models = require('../models');
 var validator = require('validator');
+var passport = require('passport');
 console.log("INDEX JS ROUTES FILE")
-console.log(models.Book);
+// console.log(models);
 console.log("INDEX JS ROUTES FILE")
 var express = require('express');
 var router = express.Router();
@@ -18,54 +19,34 @@ router.get('/', function(req, res, next) {
 // Authentication
 /////////////////
 
+
+/////////////////
+// Sessions
+/////////////////
+
 // Get form for new session
 router.get('/sessions/new', function(req, res, next) {
-    res.render('login', {
-        title: 'Login'
+    res.render('sessions/new', {
+        title: 'Login to a new session'
     });
 });
 
-// Post Session &&& create session to login user
+// Post sessions - create session in DB
 router.post('/sessions', function(req, res, next) {
-    var body = req.body;
-    var params = req.params;
-    var user = models.User.findOne({
-            where: {
-                // email: req.params.email
-                email: body["email"]
-            }
-        })
-        .then(function(user) {
-            console.log(user);
-            res.send(user);
-        })
-        .error(function(err) {
-            console.log(err);
-        })
-});
-
-// Get form for new user
-router.get('/users/new', function(req, res, next) {
-    res.render('register', {
-        title: 'Register'
-    });
-});
-
-// Post Users - create user in DB
-router.post('/users', function(req, res, next) {
     console.log("request is:", req.body);
     var body = req.body;
-    models.User.create({
-        email: body["email"],
-        password: body["password"]
-    })
-        .then(function createUserSuccess(user) {
-            console.log(user.get('email'));
-            console.log(user.get('password'));
-        }, function createUserError(err) {
+    var user = models.User.findOne({
+            where: {
+                email: body["email"],
+                password: body["password"]
+            }
+        })
+        .then(function createSessionSuccess(user) {
+            console.log("user logged in: ", user);
+            res.redirect('/users/' + user.dataValues.id);
+        }, function createSessionError(err) {
             console.log("error is:", err);
         })
-    res.redirect('/users');
 });
 
 // Delete Session - Logout user
@@ -76,8 +57,32 @@ router.delete('/sessions/:id', function(req, res, next) {
 /////////////////
 // Users
 /////////////////
+// Get form for new user
+router.get('/users/new', function(req, res, next) {
+    res.render('users/new', {
+        title: 'Register a new user'
+    });
+});
+
+// Post Users - create user in DB
+router.post('/users', function(req, res, next) {
+    console.log("request is:", req.body);
+    var body = req.body;
+    var user = models.User.create({
+            email: body["email"],
+            password: body["password"]
+        })
+        .then(function createUserSuccess(user) {
+            console.log("new user created:", user);
+            res.redirect('/users/' + user.dataValues.id);
+        }, function createUserError(err) {
+            console.log("error is:", err);
+        })
+});
+
+// Users index - see all users
 router.get('/users', function(req, res, next) {
-    models.User.findAll()
+    var users = models.User.findAll()
         .then(function(users) {
             res.render('users/index', {
                 title: "Users Index",
@@ -89,18 +94,35 @@ router.get('/users', function(req, res, next) {
         })
 });
 
-router.route('/users/:user_id')
-    .get(function(req, res) {
-        // get a user
-    })
-
-.put(function(req, res) {
-    // update a user
+// find a user
+router.get('/users/:id', function(req, res, next) {
+    var user = models.User.findOne({
+            where: {
+                id: req.params.id,
+            },
+            include: [models.List]
+        }).then(function(user) {
+            res.render('users/show', {
+                user: user,
+                lists: user.Lists
+            });
+        })
+        .error(function(err) {
+            console.log("user not found: ", err);
+        })
 })
 
-.delete(function(req, res) {
-    // destroy a user
+// update a user
+router.put('/users/:id', function(req, res, next) {
+
 })
+
+// destroy a user
+router.delete('/users/:id', function(req, res) {
+
+})
+
+
 
 /////////////////
 // Lists
@@ -108,7 +130,12 @@ router.route('/users/:user_id')
 
 // Get all the lists
 router.get('/lists', function(req, res, next) {
-    models.Book.findAll()
+    // models.List.findAll({
+    //     where: {
+    //         UserId: // set dynamically later
+    //     }
+    // })
+    models.List.findAll()
         .then(function(lists) {
             res.render('lists/index', {
                 title: "Lists Index",
@@ -128,66 +155,150 @@ router.post('/lists', function(req, res, next) {
     models.List.create({
         name: body["name"],
         type: body["type"],
-        UserId: 1 //body["user_id"]
+        UserId: 1,
+        user_id: 1 //body["user_id"]
     })
         .then(function createlistSuccess(list) {
-            console.log(list.get('name'));
-            console.log(list.get('type'));
-            console.log(list.get('user_id'));
+            console.log("list is: ", list);
         }, function createlistError(err) {
             console.log("error is:", err);
         })
     res.redirect('/lists');
 });
 
-// Get a single list
+// Get a single list and its books
+router.get('/lists/:id', function(req, res, next) {
+    // find list
+    var list = models.List.findOne({
+            where: {
+                id: req.params.id
+            },
+            include: [models.Book]
+        })
+        .then(function(list) {
+            console.log(list);
+            console.log(list.Books);
+            res.render('lists/show', {
+                list: list,
+                books: list.Books
+            });
+        }).error(function(err) {
+            console.log("couldn't find the list", err);
+        })
+});
+
 
 /////////////////
 // Books
 /////////////////
-router.get('lists/:id/books', function(req, res, next) {
-    var list = models.List.findOne()
-        .then(function() {
-            console.log("found the list", list);
-        }).error(function() {
-            console.log("couldn't find the list");
-        })
 
-    var books = models.Book.findAll({
-            where: {
-                list_id: req.params.id
-            }
-        })
-        .then(function(books) {
-            res.render('books/index', {
-                list: list,
-                title: "Books for " + list.name,
-                books: books
-            });
-        })
-        .error(function(err) {
-            console.log("couldn't find books for that list:", err);
-        })
-});
+// // Get all books on a list
+// router.get('/lists/:id/books', function(req, res, next) {
+//     // find list
+//     var list = models.List.findOne({
+//             where: {
+//                 id: req.params.id
+//             }, include: [models.Books]
+//         })
+//         .then(function(list) {
+//             console.log("found the list", list);
+//         }).error(function(err) {
+//             console.log("couldn't find the list", err);
+//         })
+
+//     // find associated books
+//     var books = models.Book.findAll({
+//             where: {
+//                 list_id: req.params.id
+//             }
+//         })
+//         .then(function(books) {
+//             res.render('books/index', {
+//                 list: list,
+//                 title: "Books for " + list.name,
+//                 books: books
+//             });
+//         })
+//         .error(function(err) {
+//             console.log("couldn't find books for that list:", err);
+//         })
+// });
 
 // Make a new Book
-router.post('/books', function(req, res, next) {
-    console.log("request is:", req.body);
+router.post('/lists/:id/books', function(req, res, next) {
+    console.log("params are:", req.params);
+    console.log("body is:", req.body);
     var body = req.body;
     models.Book.create({
         email: body["name"],
         password: body["type"],
-        user_id: body["user_id"]
+        list_id: req.params.id,
+        ListId: req.params.id //body["list_id"]
     })
         .then(function createBookSuccess(book) {
-            console.log(book.get('name'));
-            console.log(book.get('type'));
-            console.log(book.get('user_id'));
+            console.log("book is: ", book);
         }, function createBookError(err) {
             console.log("error is:", err);
         })
-    res.redirect('/books');
+    res.redirect('/lists/' + req.params.id);
 });
+
+// Get a specific book
+router.get('/lists/:list_id/books/:id', function(req, res, next) {
+    var book = models.Book.findOne({
+            where: {
+                ListId: req.params.list_id,
+                id: req.params.id
+            }
+        })
+        .then(function(book) {
+            res.render('books/show', {
+                title: "Books Show",
+                book: book
+            });
+        })
+        .error(function(err) {
+            console.log(err);
+        })
+})
+
+// update a book
+router.put('/lists/:list_id/books/:id', function(req, res, next) {
+    console.log("params are:", req.params);
+    console.log("body is:", req.body);
+    var body = req.body;
+    models.Book.update({
+        title: body["title"],
+        author: body["author"]
+    }, {
+        where: {
+            id: req.params.id
+        }
+    })
+        .then(function updateBookSuccess(book) {
+            console.log("updated book is: ", book);
+        }, function updateBookError(err) {
+            console.log("error is:", err);
+        })
+    res.redirect('/lists/' + req.params.id + '/books');
+});
+
+// Delete a specific book
+router.delete('/lists/:list_id/books/:id', function(req, res, next) {
+    var book = models.Book.destroy({
+            where: {
+                ListId: req.params.list_id,
+                id: req.params.id
+            }
+        })
+        .then(function(book) {
+            console.log("deleted book: ", book)
+        })
+        .error(function(err) {
+            console.log(err);
+        })
+    res.redirect('/lists/' + req.params.list_id + '/books');
+})
 
 
 module.exports = router;

@@ -1,0 +1,13 @@
+extends ../layout
+
+block content
+  h1 Your Profile
+  if user
+    p You're logged in as #{user.dataValues.email}
+    p= user.dataValues.email
+    ul
+    each list in lists
+      if list
+        li: a(href="/lists/" + list.dataValues.id)= list.dataValues.name
+      else
+        p No lists here

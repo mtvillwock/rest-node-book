@@ -10,9 +10,8 @@ block content
     input(type="text", placeholder="type", name="type")
     input(type="submit")
 
-  h2 lists
+  h2 Your Lists
 
   ul
   each list in lists
-    li
-      = list.name
+    li: a(href="/lists/" + list.id)= list.name

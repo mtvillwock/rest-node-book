@@ -1,8 +1,9 @@
-extends index
+extends ../layout
 
 block content
 
-  div.loginbox
+  div.register
+    p Create a user
     form(name="register", action="/users", method="post")
       input(type="email", placeholder="email", name="email")
       input(type="password", placeholder="password", name="password")
