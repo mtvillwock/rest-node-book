@@ -187,6 +187,11 @@ router.get('/lists/:id', function(req, res, next) {
         })
 });
 
+// // Delete a list
+// router.delete('/users/:id', function(req, res) {
+
+// });
+
 
 /////////////////
 // Books
@@ -254,7 +259,8 @@ router.get('/lists/:list_id/books/:id', function(req, res, next) {
         .then(function(book) {
             res.render('books/show', {
                 title: "Books Show",
-                book: book
+                book: book,
+                list_id: req.params.list_id
             });
         })
         .error(function(err) {
