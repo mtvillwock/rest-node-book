@@ -35,6 +35,49 @@ db.sequelize.sync({
     });
 console.log("POST DB SYNC APP JS");
 
+// seed the DB
+// var faker = require('faker');
+// var seed = function seed() {
+//     var users = ["Frank", "John", "Joe"]
+//     for (var i = users.length - 1; i >= 0; i--) {
+//         console.log("iterations remaining: ", i);
+
+//         var fakeEmail = faker.internet.email();
+//         var fakePw = faker.internet.password();
+//         var listTypes = ["Wish", "Favorite", "Dislike"];
+//         var listNames = ["My Wishlist", "My Favs", "My Dislike"];
+//         var titles = ["The Great Gatsby", "Cujo", "As I Lay Dying"];
+//         var authors = ["F. Scott Fitzgerald", "Stephen King", "Ernest Hemingway"];
+
+//         db.User.create({
+//                 email: fakeEmail,
+//                 password: fakePw
+//             })
+//             .then(function createUserSuccess(user) {
+//                 console.log("new user created:", user);
+
+//                 var list = db.List.create({
+//                         name: listNames[i],
+//                         type: listTypes[i],
+//                         UserId: user.id
+//                     })
+//                     .then(function createListSuccess(list) {
+//                         console.log("new list created:", list);
+
+//                         var book = db.Book.create({
+//                                 title: titles[i],
+//                                 author: authors[i],
+//                                 ListId: list.id
+//                             })
+//                             .then(function createBookSuccess(book) {
+//                                 console.log("new book created:", book);
+//                             })
+//                     })
+//             })
+//     };
+// }
+// seed();
+
 // Routes
 // require('./app/routes.js') (app, passport); // load our routes and pass in our app and fully configured passport
 
@@ -63,12 +106,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // required for passport
 app.use(session({
-    secret: 'mysecret'
+    secret: 'mysecret',
+    resave: true,
+    saveUninitialized: false
 })); // session secret
-app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
-app.use(flash()); // use connect-flash for flash messages stored in session
 
+// app.use(passport.initialize());
+// app.use(passport.session()); // persistent login sessions
+// app.use(flash()); // use connect-flash for flash messages stored in session
 
 // Specify routes for routes
 app.use('/', routes);

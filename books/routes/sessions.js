@@ -3,28 +3,46 @@ var router = express.Router();
 
 // Get form for new session
 router.get('/sessions/new', function(req, res, next) {
-    res.render('login', {
-        title: 'Login'
+    res.render('sessions/new', {
+        title: 'Login to a new session'
     });
 });
 
-// Post Session &&& create session to login user
+// Post sessions - create session in DB
 router.post('/sessions', function(req, res, next) {
+    console.log("request is:", req.body);
     var body = req.body;
-    var params = req.params;
     var user = models.User.findOne({
             where: {
-                // email: req.params.email
-                email: body["email"]
+                email: body["email"],
+                password: body["password"]
             }
         })
-        .then(function(user) {
-            console.log(user);
-            res.send(user);
+        .then(function createSessionSuccess(user) {
+            console.log("user logged in: ", user);
+            if (user.dataValues.email == body["email"]) {
+                router.userSession.id = user.dataValues.id;
+                console.log("session is:", router.userSession)
+                res.redirect('/lists/');
+            } else {
+                // redirect to login if user isn't found
+                res.redirect('/sessions/new');
+            }
+        }, function createSessionError(err) {
+            console.log("error is:", err);
         })
-        .error(function(err) {
+});
+
+// Delete Session - Logout user
+router.delete('/sessions/:id', function(req, res, next) {
+    console.log(req.body);
+    req.session.destroy(function(err) {
+        if (err) {
             console.log(err);
-        })
+        } else {
+            res.redirect('/sessions/new');
+        }
+    });
 });
 
 

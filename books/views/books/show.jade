@@ -1,3 +1,27 @@
-h1= title
-  p= book.title
-  p= book.author
+extends ../layout
+
+block content
+
+  h1= title
+
+  if book.dataValues.id
+    p= book.dataValues.title
+    p= book.dataValues.author
+    p Book #{book.dataValues.id}
+  else
+    p Book is missing values
+
+
+  //- p Update this book
+  //-   form(action="/lists/" + list_id + "/books/" + book.dataValues.id, method="post")
+  //-     input(type="hidden", name="_method", value="put")
+  //-     input(type="text", value="#{book.dataValues.title}", name="title")
+  //-     input(type="text", value="#{book.dataValues.author}", name="author")
+  //-     input(type="submit")
+
+  //-   p Delete this book
+  //-   form(action="/lists/" + list_id + "/books/" + book.dataValues.id, value="post")
+  //-     input(type="hidden", name="_method", value="delete")
+  //-     input(type="text", placeholder="name", name="name")
+  //-     input(type="text", placeholder="type", name="type")
+  //-     input(type="submit")

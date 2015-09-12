@@ -6,7 +6,11 @@ html
   body
     nav
       ul
-        li: a(href="/sessions/new") Session New (Login)
-        li: a(href="/users") User Index (Register)
+        li: a(href="/sessions/new") Login
+        li: a(href="/users/new") Register
         li: a(href="/lists") Lists Index
+        li: a(href="/logout") Logout
+        //- form(method='POST', action='/logout')
+        //-   input(type="hidden", name="_method", value="delete")
+        //-   input(type='submit' value="Logout")
     block content

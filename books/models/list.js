@@ -9,19 +9,9 @@ module.exports = function(sequelize, DataTypes) {
         classMethods: {
             associate: function(models) {
                 // associations can be defined here
-                List.belongsTo(models.User, {
-                    onDelete: "CASCADE",
-                    foreignKey: {
-                        allowNull: false
-                    }
-                });
+                List.belongsTo(models.User);
 
-                List.hasMany(models.Book, {
-                    onDelete: "CASCADE",
-                    foreignKey: {
-                        allowNull: false
-                    }
-                });
+                List.hasMany(models.Book);
             }
         }
     });
