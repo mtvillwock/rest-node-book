@@ -25,12 +25,12 @@ block content
       else
         p No books in this list
 
-    p Update this list
-    form(action="/lists/" + list.dataValues.id, method="post")
-      input(type="hidden", name="_method", value="put")
-      input(type="text", value="#{list.dataValues.name}", name="name")
-      input(type="text", value="#{list.dataValues.type}", name="type")
-      input(type="submit" value="Update")
+    //- p Update this list
+    //- form(action="/lists/" + list.dataValues.id, method="post")
+    //-   input(type="hidden", name="_method", value="put")
+    //-   input(type="text", value="#{list.dataValues.name}", name="name")
+    //-   input(type="text", value="#{list.dataValues.type}", name="type")
+    //-   input(type="submit" value="Update")
 
     //- p Delete this list
     //- form(action="/lists/" + list.dataValues.id, value="post")

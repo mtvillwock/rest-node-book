@@ -1,5 +1,6 @@
 // requiring all the models from models directory
 var http = require('http');
+var https = require('https');
 var models = require('../models');
 // var validator = require('validator');
 // var passport = require('passport');
@@ -22,7 +23,8 @@ router.get('/', function(req, res, next) {
 
 // Get form for new session
 router.get('/sessions/new', function(req, res, next) {
-    if (req.session.user_id) {
+    console.log("in sessions/new, session is:", req.session);
+    if (req.session.user) {
         res.redirect('/lists');
     } else {
         res.render('sessions/new', {
@@ -33,45 +35,38 @@ router.get('/sessions/new', function(req, res, next) {
 
 // Post sessions - create session in DB
 router.post('/sessions', function(req, res, next) {
-    req.session;
-    if (req.session.user_id) {
-        console.log("session already exists");
-        // sanity check
-    }
+    console.log("in POST /sessions, session is:", req.session);
     console.log("request is:", req.body);
-    var body = req.body;
-    var user = models.User.findOne({
-            where: {
-                email: body["email"],
-                password: body["password"]
-            }
-        })
-        .then(function createSessionSuccess(user) {
+    models.User.findOne({
+        where: {
+            email: req.body.email
+        }
+    })
+        .then(function(user) {
             console.log("user logged in: ", user);
-            if (user.dataValues.email == body["email"]) {
-                req.session.user_id = user.dataValues.id;
-                console.log("session is:", req.session.user_id)
+            if (req.body.password == user.dataValues.password) {
+                req.session.user = user.dataValues;
+                console.log("session is:", req.session);
                 res.redirect('/lists');
             } else {
                 // redirect to login if user isn't found
+                console.log("in POST /sessions, no session:", req.session);
                 res.redirect('/sessions/new');
             }
-        }, function createSessionError(err) {
-            console.log("error is:", err);
-        })
+        });
 });
 
 // Delete Session - Logout user
 // I know this should be router.delete
 router.get('/logout', function(req, res, next) {
+    console.log("in /logout, session is:", req.session);
     console.log(req.session);
     req.session.destroy();
-    res.clearCookie('connect.sid', {
+    res.clearCookie('session', {
         path: '/'
     });
     if (req.session) {
         console.log("session persisted: ", req.session);
-        console.log(err);
         res.redirect('/lists');
     } else {
         console.log("session destroyed: ", req.session);
@@ -84,7 +79,8 @@ router.get('/logout', function(req, res, next) {
 /////////////////
 // Get form for new user
 router.get('/users/new', function(req, res, next) {
-    if (req.session.user_id) {
+    console.log("in users/new, session is:", req.session);
+    if (req.session.user) {
         res.redirect('/lists');
     } else {
         res.render('users/new', {
@@ -95,16 +91,17 @@ router.get('/users/new', function(req, res, next) {
 
 // Post Users - create user in DB
 router.post('/users', function(req, res, next) {
+    console.log("in POST /users, session is:", req.session);
     console.log("request is:", req.body);
     var body = req.body;
     var user = models.User.create({
-            email: body["email"],
-            password: body["password"]
+            email: req.body.email,
+            password: req.body.password
         })
         .then(function createUserSuccess(user) {
             console.log("new user created:", user);
-            req.session.user_id = user.dataValues.id;
-            console.log("session is:", req.session.user_id);
+            req.session.user = user.dataValues;
+            console.log("session is:", req.session);
             res.redirect('/lists');
         }, function createUserError(err) {
             console.log("error is:", err);
@@ -119,40 +116,42 @@ router.post('/users', function(req, res, next) {
 
 // Get all the lists
 router.get('/lists', function(req, res, next) {
-    console.log("session is: ", req.session);
-    if (req.session.user_id) {
-        models.List.findAll({
+    console.log("in GET /lists, session is: ", req.session);
+    if (req.session && req.session.user) {
+        models.User.findOne({
             where: {
-                UserId: req.session.user_id
-            }
+                id: req.session.user.id
+            }, include: [models.List]
         })
         // models.List.findAll()
-        .then(function(lists) {
+        .then(function(user) {
+            console.log("lists user is:", user);
             res.render('lists/index', {
-                title: "Lists Index",
-                lists: lists,
-                UserId: req.session.user_id
+                title: "User Dashboard / Lists Index",
+                lists: user.Lists,
+                user: user.dataValues
             });
         })
             .error(function(err) {
                 console.log(err);
             })
     } else {
+        console.log("no session in GET /lists: ", req.session);
         res.redirect('/sessions/new');
     }
 });
 
 // Make a new list
 router.post('/lists', function(req, res, next) {
-    if (req.session.user_id) {
+    console.log("in POST /lists, session is:", req.session);
+    if (req.session.user) {
         console.log("request is:", req.body);
         console.log(req.session);
-        var body = req.body;
         models.List.create({
-            name: body["name"],
-            type: body["type"],
-            UserId: req.session.user_id,
-            user_id: req.session.user_id
+            name: req.body.name,
+            type: req.body.type,
+            UserId: req.session.user.id,
+            user_id: req.session.user.id
         })
             .then(function createlistSuccess(list) {
                 console.log("list is: ", list);
@@ -161,13 +160,15 @@ router.post('/lists', function(req, res, next) {
             })
         res.redirect('/lists');
     } else {
+        console.log("no session in POST /lists: ", req.session);
         res.redirect('/sessions/new');
     }
 });
 
 // Get a single list and its books
 router.get('/lists/:id', function(req, res, next) {
-    if (req.session.user_id) {
+    console.log("in lists/:id, session is:", req.session);
+    if (req.session.user) {
         // find list
         var list = models.List.findOne({
                 where: {
@@ -177,7 +178,7 @@ router.get('/lists/:id', function(req, res, next) {
             })
             .then(function(list) {
                 console.log(list);
-                console.log(list.Books[1]);
+                console.log(list.Books);
                 res.render('lists/show', {
                     list: list,
                     books: list.Books
@@ -186,6 +187,7 @@ router.get('/lists/:id', function(req, res, next) {
                 console.log("couldn't find the list", err);
             })
     } else {
+        console.log("no session in GET /lists/:id: ", req.session);
         res.redirect('/sessions/new');
     }
 });
@@ -202,60 +204,71 @@ router.get('/lists/:id', function(req, res, next) {
 
 // search for a book
 router.post('/lists/:id/books/search', function(req, res, next) {
-        // Google API books call
-        //https://developers.google.com/books/docs/v1/using?hl=en
+    //Sample Google API books call
+    //https://www.googleapis.com/books/v1/volumes?q=intitle:flowers+inauthor:keyes&key=APIKEY
+    var searchResults;
 
-        //https://www.googleapis.com/books/v1/volumes?q=flowers+inauthor:keyes&key=APIKEY
-        var searchResults;
-        function getBook() {
-            var host = "https://www.googleapis.com/books/v1/volumes?q=";
-            var author = req.body["author"];
-            var title = req.body["title"];
-            var route;
-            var key = process.env.BOOKS_KEY
-            if (author && title) {
-                route ="inauthor:" + author + "&" + "intitle:" + title;
-            } else if (title) {
-                route = "intitle:" + title;
-            } else if (author) {
-                route = "inauthor:" + author;
+    function getBook() {
+        var host = "https://www.googleapis.com";
+        var author = req.body["author"];
+        var title = req.body["title"];
+        var route = "/books/v1/volumes?q=";
+        var key = process.env.BOOKS_KEY;
+
+        if (author && title) {
+            route += "inauthor:" + author + "+" + "intitle:" + title;
+        } else if (title) {
+            route += "intitle:" + title;
+        } else if (author) {
+            route += "inauthor:" + author;
+        }
+
+        route += "&printType=books&key=" + key;
+
+        var url = host + route;
+        console.log("request is: ", url);
+
+        return https.get(url, function(response) {
+            console.log("response is: ", response);
+            console.log("res is: ", res);
+            if (response.statusCode == 200) {
+                // console.log("success response is: ", res);
+                // var parsed = JSON.parse(response.body);
+                // console.log("parsed response is:", parsed);
+                // return parsed;
+                // res.render(parsed);
+            } else {
+                console.log("error response is: ", response);
             }
-
-            route += "&key=" + key;
-
-            http.get({
-                host: host,
-                path: route
-            }, function(response) {
-                var parsed = JSON.parse(response.body);
-                return parsed;
-            });
+        }).on('error', function(e) {
+            console.log("Got error: " + e.message);
         });
+    };
 
     searchResults = getBook();
+    console.log("SEARCH RESULTS ARE: ", searchResults);
     //https://www.googleapis.com/books/v1/volumes?q=search+terms
     // parse data to pass to model
-    models.Book.findOrCreate({
-            where: {
-                $or: [{
-                    {
-                        author: req.body["author"]
-                    }, {
-                        title: req.body["title"]
-                    }
-                }]
-            }).then(function(book) {
-            console.log("found book:", book);
-            res.redirect('/lists/' + req.params.id + '/books/' + book.dataValues.id);
-        }, function(err) {
-            console.log("book not found", err);
-        })
-    })
-}
+    // models.Book.findOrCreate({
+    //     where: {
+    //         $or: [{
+    //             author: req.body["author"]
+    //         }, {
+    //             title: req.body["title"]
+    //         }]
+    //     }
+    // }).then(function(book) {
+    //     console.log("found book:", book);
+    //     res.redirect('/lists/' + req.params.id + '/books/' + book.dataValues.id);
+    // }, function(err) {
+    //     console.log("book not found", err);
+    // })
+})
 
 // Make a new Book
 router.post('/lists/:id/books', function(req, res, next) {
-    if (req.session.user_id) {
+    console.log("in POST /lists/:id/books, session is:", req.session);
+    if (req.session.user) {
         console.log("params are:", req.params);
         console.log("body is:", req.body);
         var body = req.body;
@@ -272,13 +285,15 @@ router.post('/lists/:id/books', function(req, res, next) {
             })
         res.redirect('/lists/' + req.params.id);
     } else {
+        console.log("no session in POST /lists/:id/books: ", req.session);
         res.redirect('/sessions/new');
     }
 });
 
 // Get a specific book
 router.get('/lists/:list_id/books/:id', function(req, res, next) {
-    if (req.session.user_id) {
+    console.log("in /lists/:list_id/books/:id, session is:", req.session);
+    if (req.session.user) {
         var book = models.Book.findOne({
                 where: {
                     ListId: req.params.list_id,
@@ -296,6 +311,7 @@ router.get('/lists/:list_id/books/:id', function(req, res, next) {
                 console.log(err);
             })
     } else {
+        console.log("in /lists/:list_id/books/:id, no session:", req.session);
         res.redirect('/sessions/new');
     }
 })

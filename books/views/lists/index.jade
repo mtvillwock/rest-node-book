@@ -5,12 +5,13 @@ block content
 
   h2 Creating a new list
   form(action="/lists", method="post")
+    //- Not using hidden input, getting user id from sessions
     //- input(type="hidden", value="user id", name="user_id")
     input(type="text", placeholder="name", name="name")
     input(type="text", placeholder="type", name="type")
     input(type="submit")
 
-  h2 Your Lists
+  h2= user.email + "'s Lists"
 
   ul
   each list in lists
