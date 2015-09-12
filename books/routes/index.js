@@ -204,6 +204,8 @@ router.get('/lists/:id', function(req, res, next) {
 router.post('/lists/:id/books/search', function(req, res, next) {
         // Google API books call
         //https://developers.google.com/books/docs/v1/using?hl=en
+
+        //https://www.googleapis.com/books/v1/volumes?q=flowers+inauthor:keyes&key=APIKEY
         var searchResults;
         function getBook() {
             var host = "https://www.googleapis.com/books/v1/volumes?q=";
@@ -211,10 +213,12 @@ router.post('/lists/:id/books/search', function(req, res, next) {
             var title = req.body["title"];
             var route;
             var key = process.env.BOOKS_KEY
-            if (author) {
-                route = "inauthor:" + author;
+            if (author && title) {
+                route ="inauthor:" + author + "&" + "intitle:" + title;
             } else if (title) {
                 route = "intitle:" + title;
+            } else if (author) {
+                route = "inauthor:" + author;
             }
 
             route += "&key=" + key;
@@ -223,8 +227,7 @@ router.post('/lists/:id/books/search', function(req, res, next) {
                 host: host,
                 path: route
             }, function(response) {
-                var parsed = JSON.parse(body);
-                // pass config object to callback (still need to write callback)
+                var parsed = JSON.parse(response.body);
                 return parsed;
             });
         });
