@@ -16,12 +16,7 @@ module.exports = function(sequelize, DataTypes) {
                     }
                 });
 
-                List.hasMany(models.Book, {
-                    onDelete: "CASCADE",
-                    foreignKey: {
-                        allowNull: false
-                    }
-                });
+                List.hasMany(models.Book);
             }
         }
     });

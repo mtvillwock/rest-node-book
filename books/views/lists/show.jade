@@ -15,7 +15,7 @@ block content
     ul
     each book in books
       if book
-        li: a(href="/lists/" + list.dataValues.id + "/books/" + book.dataValues.id)= book.dataValues.title
+        li: a(href="/lists/" + list.dataValues.id + "/books/" + book.dataValues.id)= book.dataValues.title + " by " + book.dataValues.author
       else
         p No books in this list
 
