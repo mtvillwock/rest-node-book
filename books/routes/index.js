@@ -1,4 +1,5 @@
 // requiring all the models from models directory
+var http = require('http');
 var models = require('../models');
 // var validator = require('validator');
 // var passport = require('passport');
@@ -201,26 +202,52 @@ router.get('/lists/:id', function(req, res, next) {
 
 // search for a book
 router.post('/lists/:id/books/search', function(req, res, next) {
-    // Google API books call
-    //https://developers.google.com/books/docs/v1/using?hl=en
+        // Google API books call
+        //https://developers.google.com/books/docs/v1/using?hl=en
+        var searchResults;
+        function getBook() {
+            var host = "https://www.googleapis.com/books/v1/volumes?q=";
+            var author = req.body["author"];
+            var title = req.body["title"];
+            var route;
+            var key = process.env.BOOKS_KEY
+            if (author) {
+                route = "inauthor:" + author;
+            } else if (title) {
+                route = "intitle:" + title;
+            }
+
+            route += "&key=" + key;
+
+            http.get({
+                host: host,
+                path: route
+            }, function(response) {
+                var parsed = JSON.parse(body);
+                // pass config object to callback (still need to write callback)
+                return parsed;
+            });
+        });
+
+    searchResults = getBook();
     //https://www.googleapis.com/books/v1/volumes?q=search+terms
     // parse data to pass to model
-        models.Book.findOrCreate({
-                where: {
-                    $or: [{
-                        {
-                            author: req.body["author"]
-                        }, {
-                            title: req.body["title"]
-                        }
-                    }]
-                }).then(function(book) {
-                console.log("found book:", book);
-                res.redirect('/lists/' + req.params.id + '/books/' + book.dataValues.id);
-            }, function(err) {
-                console.log("book not found", err);
-            })
+    models.Book.findOrCreate({
+            where: {
+                $or: [{
+                    {
+                        author: req.body["author"]
+                    }, {
+                        title: req.body["title"]
+                    }
+                }]
+            }).then(function(book) {
+            console.log("found book:", book);
+            res.redirect('/lists/' + req.params.id + '/books/' + book.dataValues.id);
+        }, function(err) {
+            console.log("book not found", err);
         })
+    })
 }
 
 // Make a new Book
