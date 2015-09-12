@@ -11,6 +11,12 @@ block content
         input(type="text", placeholder="author", name="author")
         input(type="submit")
 
+  h2 Search for a book to add
+      form(action="/lists/" + list.id + "/books/search", method="post")
+        input(type="text", placeholder="title", name="title")
+        input(type="text", placeholder="author", name="author")
+        input(type="submit")
+
   h3 Books in #{list.dataValues.name}
     ul
     each book in books

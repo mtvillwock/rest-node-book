@@ -65,7 +65,9 @@ router.post('/sessions', function(req, res, next) {
 router.get('/logout', function(req, res, next) {
     console.log(req.session);
     req.session.destroy();
-    res.clearCookie('connect.sid', { path: '/'});
+    res.clearCookie('connect.sid', {
+        path: '/'
+    });
     if (req.session) {
         console.log("session persisted: ", req.session);
         console.log(err);
@@ -101,7 +103,7 @@ router.post('/users', function(req, res, next) {
         .then(function createUserSuccess(user) {
             console.log("new user created:", user);
             req.session.user_id = user.dataValues.id;
-            console.log("session is:", req.session.user_id  );
+            console.log("session is:", req.session.user_id);
             res.redirect('/lists');
         }, function createUserError(err) {
             console.log("error is:", err);
@@ -196,6 +198,30 @@ router.get('/lists/:id', function(req, res, next) {
 /////////////////
 // Books
 /////////////////
+
+// search for a book
+router.post('/lists/:id/books/search', function(req, res, next) {
+    // Google API books call
+    //https://developers.google.com/books/docs/v1/using?hl=en
+    //https://www.googleapis.com/books/v1/volumes?q=search+terms
+    // parse data to pass to model
+        models.Book.findOrCreate({
+                where: {
+                    $or: [{
+                        {
+                            author: req.body["author"]
+                        }, {
+                            title: req.body["title"]
+                        }
+                    }]
+                }).then(function(book) {
+                console.log("found book:", book);
+                res.redirect('/lists/' + req.params.id + '/books/' + book.dataValues.id);
+            }, function(err) {
+                console.log("book not found", err);
+            })
+        })
+}
 
 // Make a new Book
 router.post('/lists/:id/books', function(req, res, next) {
