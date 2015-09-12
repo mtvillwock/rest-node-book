@@ -1,7 +1,7 @@
 // requiring all the models from models directory
 var models = require('../models');
-var validator = require('validator');
-var passport = require('passport');
+// var validator = require('validator');
+// var passport = require('passport');
 console.log("INDEX JS ROUTES FILE")
 // console.log(models);
 console.log("INDEX JS ROUTES FILE")
@@ -32,9 +32,10 @@ router.get('/sessions/new', function(req, res, next) {
 
 // Post sessions - create session in DB
 router.post('/sessions', function(req, res, next) {
-    var userSession = req.session;
-    if (userSession.user_id) {
+    req.session;
+    if (req.session.user_id) {
         console.log("session already exists");
+        // sanity check
     }
     console.log("request is:", req.body);
     var body = req.body;
@@ -47,8 +48,8 @@ router.post('/sessions', function(req, res, next) {
         .then(function createSessionSuccess(user) {
             console.log("user logged in: ", user);
             if (user.dataValues.email == body["email"]) {
-                userSession.user_id = user.dataValues.id;
-                console.log("session is:", userSession)
+                req.session.user_id = user.dataValues.id;
+                console.log("session is:", req.session.user_id)
                 res.redirect('/lists');
             } else {
                 // redirect to login if user isn't found
@@ -100,7 +101,7 @@ router.post('/users', function(req, res, next) {
         .then(function createUserSuccess(user) {
             console.log("new user created:", user);
             req.session.user_id = user.dataValues.id;
-            console.log("session is:", userSession);
+            console.log("session is:", req.session.user_id  );
             res.redirect('/lists');
         }, function createUserError(err) {
             console.log("error is:", err);
@@ -115,7 +116,7 @@ router.post('/users', function(req, res, next) {
 
 // Get all the lists
 router.get('/lists', function(req, res, next) {
-    // console.log("session is: ", userSession);
+    console.log("session is: ", req.session);
     if (req.session.user_id) {
         models.List.findAll({
             where: {
@@ -127,7 +128,7 @@ router.get('/lists', function(req, res, next) {
             res.render('lists/index', {
                 title: "Lists Index",
                 lists: lists,
-                // UserId: 1
+                UserId: req.session.user_id
             });
         })
             .error(function(err) {
