@@ -16,28 +16,25 @@ router.get('/', function(req, res, next) {
 });
 
 /////////////////
-// Authentication
-/////////////////
-
-/////////////////
 // Sessions
 /////////////////
 
 // Get form for new session
 router.get('/sessions/new', function(req, res, next) {
-    res.render('sessions/new', {
-        title: 'Login to a new session'
-    });
+    if (req.session.user_id) {
+        res.redirect('/lists');
+    } else {
+        res.render('sessions/new', {
+            title: 'Login to a new session'
+        });
+    }
 });
 
 // Post sessions - create session in DB
 router.post('/sessions', function(req, res, next) {
     var userSession = req.session;
     if (userSession.user_id) {
-        console.log("session exists");
-    } else {
-        userSession.user_id = 1;
-        console.log("session added", userSession);
+        console.log("session already exists");
     }
     console.log("request is:", req.body);
     var body = req.body;
@@ -50,7 +47,7 @@ router.post('/sessions', function(req, res, next) {
         .then(function createSessionSuccess(user) {
             console.log("user logged in: ", user);
             if (user.dataValues.email == body["email"]) {
-                userSession.id = user.dataValues.id;
+                userSession.user_id = user.dataValues.id;
                 console.log("session is:", userSession)
                 res.redirect('/lists');
             } else {
@@ -67,6 +64,7 @@ router.post('/sessions', function(req, res, next) {
 router.get('/logout', function(req, res, next) {
     console.log(req.session);
     req.session.destroy();
+    res.clearCookie('connect.sid', { path: '/'});
     if (req.session) {
         console.log("session persisted: ", req.session);
         console.log(err);
@@ -206,7 +204,7 @@ router.post('/lists/:id/books', function(req, res, next) {
         var body = req.body;
         models.Book.create({
             author: body["author"],
-            type: body["type"],
+            title: body["title"],
             list_id: req.params.id,
             ListId: req.params.id //body["list_id"]
         })

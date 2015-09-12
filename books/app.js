@@ -63,11 +63,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // required for passport
 app.use(session({
-    secret: 'mysecret'
+    secret: 'mysecret',
+    resave: true,
+    saveUninitialized: false
 })); // session secret
-app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
-app.use(flash()); // use connect-flash for flash messages stored in session
+
+// app.use(passport.initialize());
+// app.use(passport.session()); // persistent login sessions
+// app.use(flash()); // use connect-flash for flash messages stored in session
 
 // Specify routes for routes
 app.use('/', routes);
