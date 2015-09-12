@@ -121,7 +121,8 @@ router.get('/lists', function(req, res, next) {
         models.User.findOne({
             where: {
                 id: req.session.user.id
-            }, include: [models.List]
+            },
+            include: [models.List]
         })
         // models.List.findAll()
         .then(function(user) {
@@ -206,9 +207,8 @@ router.get('/lists/:id', function(req, res, next) {
 router.post('/lists/:id/books/search', function(req, res, next) {
     //Sample Google API books call
     //https://www.googleapis.com/books/v1/volumes?q=intitle:flowers+inauthor:keyes&key=APIKEY
-    var searchResults;
 
-    function getBook() {
+    var results = (function getBook() {
         var host = "https://www.googleapis.com";
         var author = req.body["author"];
         var title = req.body["title"];
@@ -228,25 +228,33 @@ router.post('/lists/:id/books/search', function(req, res, next) {
         var url = host + route;
         console.log("request is: ", url);
 
-        return https.get(url, function(response) {
-            console.log("response is: ", response);
-            console.log("res is: ", res);
-            if (response.statusCode == 200) {
-                // console.log("success response is: ", res);
-                // var parsed = JSON.parse(response.body);
-                // console.log("parsed response is:", parsed);
-                // return parsed;
-                // res.render(parsed);
-            } else {
-                console.log("error response is: ", response);
-            }
-        }).on('error', function(e) {
-            console.log("Got error: " + e.message);
-        });
-    };
+        https.get(url, function(res) {
+            res.setEncoding('utf-8');
 
-    searchResults = getBook();
-    console.log("SEARCH RESULTS ARE: ", searchResults);
+            var responseString = '';
+
+            res.on('data', function(data) {
+                responseString += data;
+            });
+
+            var results = res.on('end', function() {
+                // console.log(responseString);
+                var responseObject = JSON.parse(responseString);
+                // console.log(responseObject);
+                // console.log("RESPONSE OBJECT ITEMS &&&&&&&&&&&&&&&&&&&");
+                searchResults = responseObject.items;
+                // console.log(searchResults);
+                console.log("RESPONSE OBJECT ITEMS &&&&&&&&&&&&&&&&&&&");
+
+                for (var i = searchResults.length - 1; i >= 0; i--) {
+                    console.log(searchResults.volumeInfo);
+                };
+            });
+            return results;
+        });
+    })();
+
+    console.log(results);
     //https://www.googleapis.com/books/v1/volumes?q=search+terms
     // parse data to pass to model
     // models.Book.findOrCreate({
