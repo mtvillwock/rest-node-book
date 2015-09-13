@@ -207,20 +207,21 @@ router.get('/lists/:id', function(req, res, next) {
 router.post('/lists/:id/books/search', function(req, res, next) {
     //Sample Google API books call
     //https://www.googleapis.com/books/v1/volumes?q=intitle:flowers+inauthor:keyes&key=APIKEY
+    var list_id = req.params.id;
+    var results;
+    var response = res;
 
-    var results = (function getBook() {
+    function getBook() {
         var host = "https://www.googleapis.com";
-        var author = req.body["author"];
-        var title = req.body["title"];
         var route = "/books/v1/volumes?q=";
         var key = process.env.BOOKS_KEY;
 
-        if (author && title) {
-            route += "inauthor:" + author + "+" + "intitle:" + title;
+        if (req.body["author"] && req.body["title"]) {
+            route += "inauthor:" + req.body["author"] + "+" + "intitle:" + req.body["title"];
         } else if (title) {
-            route += "intitle:" + title;
+            route += "intitle:" + req.body["title"];
         } else if (author) {
-            route += "inauthor:" + author;
+            route += "inauthor:" + req.body["author"];
         }
 
         route += "&printType=books&key=" + key;
@@ -239,22 +240,63 @@ router.post('/lists/:id/books/search', function(req, res, next) {
 
             var results = res.on('end', function() {
                 // console.log(responseString);
+                // console.log("RESPONSE OBJECT &&&&&&&&&&&&&&&&&&&&&&&&&");
                 var responseObject = JSON.parse(responseString);
                 // console.log(responseObject);
-                // console.log("RESPONSE OBJECT ITEMS &&&&&&&&&&&&&&&&&&&");
                 searchResults = responseObject.items;
+                // console.log("RESPONSE OBJECT.ITEMS $$$$$$$$$$$$$$$$$$$$$$$$$");
                 // console.log(searchResults);
-                console.log("RESPONSE OBJECT ITEMS &&&&&&&&&&&&&&&&&&&");
 
-                for (var i = searchResults.length - 1; i >= 0; i--) {
-                    console.log(searchResults.volumeInfo);
-                };
+                // for (var i = searchResults.length - 1; i >= 0; i--) {
+                console.log("individual items in searchResults *****************");
+                console.log(searchResults[0].volumeInfo);
+                // just taking first result
+                var bookInfo = searchResults[0].volumeInfo;
+                var author;
+                var title = bookInfo.title;
+                var authors = bookInfo.authors;
+                // check if there are multiple authors
+                if (authors.length === 1) {
+                    author = authors[0];
+                } else {
+                    for (var i = authors.length - 1; i >= 0; i--) {
+                        if (authors[i].toLowerCase() === req.body["author"].toLowerCase()) {
+                            // set author to author name from array of authors if matching
+                            author = authors[i];
+                        }
+                    };
+                }
+
+                console.log("THE AUTHOR AND TITLE are :", author, title);
+                models.Book.findOrCreate({
+                    where: {
+                        $or: [{
+                            author: req.body["author"]
+                        }, {
+                            title: req.body["title"]
+                        }]
+                    },
+                    defaults: {
+                        author: author,
+                        title: title,
+                        list_id: list_id, // don't need this one
+                        ListId: list_id
+                    }
+                }).then(function(book) {
+                    console.log("found book:", book[0].dataValues, list_id);
+                    // using response from above
+                    response.redirect('/lists/' + list_id + '/books/' + book[0].dataValues.id);
+                }, function(err) {
+                    console.log("book not found", err);
+                })
+                // };
             });
             return results;
-        });
-    })();
+        }) // can I use .then here?
+    };
 
-    console.log(results);
+    results = getBook();
+
     //https://www.googleapis.com/books/v1/volumes?q=search+terms
     // parse data to pass to model
     // models.Book.findOrCreate({
