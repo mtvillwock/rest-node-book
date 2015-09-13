@@ -7,7 +7,8 @@ var bodyParser = require('body-parser');
 
 var passport = require('passport');
 var flash = require('connect-flash');
-var session = require('express-session');
+// var session = require('express-session');
+var session = require('client-sessions');
 
 var configDB = require('./config/database')
 
@@ -104,11 +105,12 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser()); // read cookies (for auth)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// required for passport
+// using
 app.use(session({
-    secret: 'mysecret',
-    resave: true,
-    saveUninitialized: false
+  cookieName: 'session',
+  secret: process.env.NODE_PW,
+  duration: 30 * 60 * 1000,
+  activeDuration: 5 * 60 * 1000,
 })); // session secret
 
 // app.use(passport.initialize());
