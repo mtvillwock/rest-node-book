@@ -88,6 +88,8 @@ var sessions = require('./routes/sessions');
 var books = require('./routes/books');
 var lists = require('./routes/lists');
 
+var port = process.env.PORT || '3000';
+
 var app = express();
 
 // view engine setup - set path and choose Jade
