@@ -18,7 +18,7 @@ app.set('port', port);
 /**
 * require database.js file
 */
-var database = require('../config/database');
+var database = require('./config/database');
 
 /**
  * Create HTTP server.
