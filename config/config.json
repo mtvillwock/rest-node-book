@@ -14,7 +14,8 @@
     "dialect": "mysql"
   },
   "production": {
-  "use_env_variable": "DATABASE_URL",
+  // "use_env_variable": "DATABASE_URL",
+  "host": "us-cdbr-iron-east-02.cleardb.net",
   "dialect": "mysql"
   }
 }

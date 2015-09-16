@@ -128,18 +128,13 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser()); // read cookies (for auth)
 app.use(express.static(path.join(__dirname, 'public')));
 
-console.log(process.env);
-// using
+// using client-sessions for auth
 app.use(session({
     cookieName: 'session',
     secret: process.env.NODE_PW,
     duration: 30 * 60 * 1000,
     activeDuration: 5 * 60 * 1000,
-})); // session secret
-
-// app.use(passport.initialize());
-// app.use(passport.session()); // persistent login sessions
-// app.use(flash()); // use connect-flash for flash messages stored in session
+}));
 
 // Specify routes for routes
 app.use('/', routes);
