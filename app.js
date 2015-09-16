@@ -5,8 +5,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var passport = require('passport');
-var flash = require('connect-flash');
+var dotenv = require('dotenv');
+dotenv.load();
 // var session = require('express-session');
 var session = require('client-sessions');
 
@@ -37,28 +37,28 @@ var db = require('./models/index');
 // console.log("POST DB SYNC APP JS");
 
 
-var sequelize = require('sequelize-heroku').connect();
-if (sequelize) {
-    sequelize.authenticate().then(function() {
-        var config = sequelize.connectionManager.config;
+db.sequelizeConnect = require('sequelize-heroku').connect();
+if (db.sequelizeConnect) {
+    db.sequelizeConnect.authenticate().then(function() {
+        var config = db.sequelizeConnect.connectionManager.config;
         console.log("all config: ", config);
         console.log('sequelize-heroku: Connected to ' + config.host + ' as ' + config.username + '.');
 
-        sequelize.query('SELECT 1+1 as test').then(function(res) {
+        db.sequelizeConnect.query('SELECT 1+1 as test').then(function(res) {
 
             console.log('1+1=' + res[0].test);
 
         });
 
     }).catch(function(err) {
-        var config = sequelize.connectionManager.config;
+        var config = db.sequelizeConnect.connectionManager.config;
         console.log('Sequelize: Error connecting ' + config.host + ' as ' + config.user + ': ' + err);
     });
 } else {
     console.log('No environment variable found.');
 }
 
-sequelize.sync({
+db.sequelize.sync({
     // force: true
 })
     .then(function(err) {
@@ -112,7 +112,6 @@ console.log("POST DB SYNC APP JS");
 // seed();
 
 // Routes
-// require('./app/routes.js') (app, passport); // load our routes and pass in our app and fully configured passport
 
 var routes = require('./routes/index');
 var users = require('./routes/users');

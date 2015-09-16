@@ -216,11 +216,13 @@ router.post('/lists/:id/books/search', function(req, res, next) {
         var route = "/books/v1/volumes?q=";
         var key = process.env.BOOKS_KEY;
 
+        console.log()
+
         if (req.body["author"] && req.body["title"]) {
             route += "inauthor:" + req.body["author"] + "+" + "intitle:" + req.body["title"];
-        } else if (title) {
+        } else if (req.body["title"]) {
             route += "intitle:" + req.body["title"];
-        } else if (author) {
+        } else if (req.body["author"]) {
             route += "inauthor:" + req.body["author"];
         }
 
@@ -267,13 +269,16 @@ router.post('/lists/:id/books/search', function(req, res, next) {
                     };
                 }
 
-                console.log("THE AUTHOR AND TITLE are :", author, title);
+                var searchedAuthor = req.body["author"];
+                var searchedTitle = req.body["title"];
+
+                console.log("THE AUTHOR AND TITLE FROM GOOGLE BOOKS are :", author, title);
                 models.Book.findOrCreate({
                     where: {
                         $or: [{
-                            author: req.body["author"]
+                            author: searchedAuthor
                         }, {
-                            title: req.body["title"]
+                            title: searchedTitle
                         }]
                     },
                     defaults: {
@@ -283,6 +288,7 @@ router.post('/lists/:id/books/search', function(req, res, next) {
                         ListId: list_id
                     }
                 }).then(function(book) {
+                    console.log("inside findOrCreate callback, response is: ", book);
                     console.log("found book:", book[0].dataValues, list_id);
                     // using response from above
                     response.redirect('/lists/' + list_id + '/books/' + book[0].dataValues.id);
@@ -351,6 +357,8 @@ router.get('/lists/:list_id/books/:id', function(req, res, next) {
                 }
             })
             .then(function(book) {
+                console.log("book #" + req.params.id + "to render is: ", book);
+
                 res.render('books/show', {
                     title: "Books Show",
                     book: book,
