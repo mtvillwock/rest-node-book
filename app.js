@@ -19,28 +19,29 @@ var db = require('./models/index');
 // console.log(db.sequelize.models);
 
 // Verifying the DB connection has been made
-db.sequelize.authenticate()
-    .then(function(err) {
-        console.log('Connection has been established successfully.');
-    }, function(err) {
-        console.log('Unable to connect to the database:', err);
-    });
-// Force migrations, dropping && creating tables
-db.sequelize.sync({
-    // force: true
-})
-    .then(function(err) {
-        console.log('It worked!');
-    }, function(err) {
-        console.log('An error occurred while creating the table:', err);
-    });
-console.log("POST DB SYNC APP JS");
+// db.sequelize.authenticate()
+//     .then(function(err) {
+//         console.log('Connection has been established successfully.');
+//     }, function(err) {
+//         console.log('Unable to connect to the database:', err);
+//     });
+// // Force migrations, dropping && creating tables
+// db.sequelize.sync({
+//     // force: true
+// })
+//     .then(function(err) {
+//         console.log('It worked!');
+//     }, function(err) {
+//         console.log('An error occurred while creating the table:', err);
+//     });
+// console.log("POST DB SYNC APP JS");
 
 
 var sequelize = require('sequelize-heroku').connect();
 if (sequelize) {
     sequelize.authenticate().then(function() {
         var config = sequelize.connectionManager.config;
+        console.log("all config: ", config);
         console.log('sequelize-heroku: Connected to ' + config.host + ' as ' + config.username + '.');
 
         sequelize.query('SELECT 1+1 as test').then(function(res) {
@@ -56,6 +57,16 @@ if (sequelize) {
 } else {
     console.log('No environment variable found.');
 }
+
+sequelize.sync({
+    // force: true
+})
+    .then(function(err) {
+        console.log('It worked!');
+    }, function(err) {
+        console.log('An error occurred while creating the table:', err);
+    });
+console.log("POST DB SYNC APP JS");
 
 // seed the DB
 // var faker = require('faker');
