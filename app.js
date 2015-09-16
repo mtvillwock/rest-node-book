@@ -36,6 +36,27 @@ db.sequelize.sync({
     });
 console.log("POST DB SYNC APP JS");
 
+
+var sequelize = require('sequelize-heroku').connect();
+if (sequelize) {
+    sequelize.authenticate().then(function() {
+        var config = sequelize.connectionManager.config;
+        console.log('sequelize-heroku: Connected to ' + config.host + ' as ' + config.username + '.');
+
+        sequelize.query('SELECT 1+1 as test').then(function(res) {
+
+            console.log('1+1=' + res[0].test);
+
+        });
+
+    }).catch(function(err) {
+        var config = sequelize.connectionManager.config;
+        console.log('Sequelize: Error connecting ' + config.host + ' as ' + config.user + ': ' + err);
+    });
+} else {
+    console.log('No environment variable found.');
+}
+
 // seed the DB
 // var faker = require('faker');
 // var seed = function seed() {
@@ -107,12 +128,13 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser()); // read cookies (for auth)
 app.use(express.static(path.join(__dirname, 'public')));
 
+console.log(process.env);
 // using
 app.use(session({
-  cookieName: 'session',
-  secret: process.env.NODE_PW,
-  duration: 30 * 60 * 1000,
-  activeDuration: 5 * 60 * 1000,
+    cookieName: 'session',
+    secret: process.env.NODE_PW,
+    duration: 30 * 60 * 1000,
+    activeDuration: 5 * 60 * 1000,
 })); // session secret
 
 // app.use(passport.initialize());
