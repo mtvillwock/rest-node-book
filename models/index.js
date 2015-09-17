@@ -14,7 +14,7 @@ if (config.use_env_variable) {
     var sequelize = new Sequelize(process.env[config.use_env_variable]);
 } else {
     console.log("in ELSE in Models/Index using config attributes:", config);
-    var sequelize = new Sequelize(config.database, config.username, config.password, config);
+    var sequelize = new Sequelize(config.database, config.CLEARDB_UN, config.CLEARDB_PW, config);
 }
 
 fs
